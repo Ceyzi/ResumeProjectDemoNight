@@ -1,0 +1,81 @@
+﻿@model List<ResumeProjectDemoNight.Entities.Education>
+@{
+    ViewData["Title"] = "Eğitim Bilgilerim";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+<style>
+    .edu-card {
+        background: #1c1c24;
+        border: 1px solid #2d2d3a;
+        border-radius: 15px;
+        padding: 25px;
+        transition: 0.3s;
+        height: 100%;
+        display: flex;
+        gap: 20px;
+    }
+
+        .edu-card:hover {
+            border-color: #3d5afe;
+            transform: translateY(-5px);
+        }
+
+    .edu-logo {
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
+        background: white; /* Logolar genelde şeffaf/beyaz olduğu için */
+        padding: 5px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+
+    .edu-content {
+        flex-grow: 1;
+    }
+
+    .edu-date {
+        font-size: 0.8rem;
+        color: #3d5afe;
+        font-weight: 700;
+        background: rgba(61, 90, 254, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+</style>
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2 class="fw-bold text-white mb-0">Eğitim Geçmişi</h2>
+        <a href="/Education/AddEducation" class="btn btn-primary px-4">+ Yeni Eğitim</a>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-lg-6">
+                <div class="edu-card">
+                    <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/default-edu.png" : item.ImageUrl)"
+                         class="edu-logo shadow-sm" alt="Logo">
+
+                    <div class="edu-content">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h4 class="fw-bold text-white mb-0">@item.Title</h4>
+                                <h6 class="text-muted mt-1">@item.Subtitle</h6>
+                            </div>
+                            <span class="edu-date">@item.Date</span>
+                        </div>
+                        <p class="text-secondary small mb-3" style="line-height: 1.5;">@item.Description</p>
+
+                        <div class="d-flex gap-2">
+                            <a href="#" class="btn btn-sm btn-outline-warning">Düzenle</a>
+                            <a href="#" class="btn btn-sm btn-outline-danger">Sil</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

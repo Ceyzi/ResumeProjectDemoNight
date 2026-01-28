@@ -1,0 +1,168 @@
+﻿@model ResumeProjectDemoNight.Entities.Skill
+@{
+    ViewData["Title"] = "Yeni Yetenek Ekle";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+<style>
+    :root {
+        --card-bg: #1c1c24;
+        --border: #2d2d3a;
+        --accent: #3d5afe;
+    }
+
+    body {
+        background-color: #121218 !important;
+        color: white;
+    }
+
+    .form-container {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        padding: 40px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-label {
+        color: #a0a0b0;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Input & Slider Styles */
+    .custom-input {
+        background-color: #13131a;
+        border: 1px solid var(--border);
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    .range-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        background: #2d2d3a;
+        border-radius: 5px;
+        outline: none;
+    }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+    /* Hızlı Seçim Butonları */
+    .quick-select-btn {
+        border: 1px solid var(--border);
+        background: transparent;
+        color: #a0a0b0;
+        padding: 8px 15px;
+        border-radius: 6px;
+        margin-right: 10px;
+        transition: 0.3s;
+        font-size: 0.85rem;
+    }
+
+        .quick-select-btn:hover {
+            border-color: var(--accent);
+            color: white;
+        }
+
+    .btn-beginner {
+        border-left: 4px solid #ff9800;
+    }
+
+    .btn-mid {
+        border-left: 4px solid #3d5afe;
+    }
+
+    .btn-good {
+        border-left: 4px solid #00c853;
+    }
+
+    .btn-expert {
+        border-left: 4px solid #aa00ff;
+    }
+
+    .preview-bar {
+        height: 12px;
+        background: #2d2d3a;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+</style>
+
+<div class="container p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Yeni Yetenek Ekle</h2>
+            <p class="text-muted">Yeni bir yetenek kaydı oluşturun</p>
+        </div>
+        <a href="/Skill/Index" class="btn btn-outline-secondary btn-sm px-3">← Listeye Dön</a>
+    </div>
+
+    <div class="form-container shadow">
+        <form method="post">
+            <div class="mb-4">
+                <label class="form-label">Yetenek Adı <span class="text-danger">*</span></label>
+                <input type="text" asp-for="Title" class="form-control custom-input" placeholder="Örn: C#, React, SQL" required />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Yetenek Seviyesi (%) <span class="text-danger">*</span></label>
+                <input type="range" asp-for="Value" class="range-slider" id="skillRange" min="0" max="100" value="50" oninput="updatePreview(this.value)">
+                <div class="d-flex justify-content-between mt-2">
+                    <small class="text-muted">0%</small>
+                    <div class="fw-bold text-white">Seçili Seviye: <span id="rangeValue" class="text-info">50%</span></div>
+                    <small class="text-muted">100%</small>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label d-block mb-2">ÖNİZLEME</label>
+                <div class="preview-bar">
+                    <div id="progressBar" style="width: 50%; height: 100%; background: var(--accent); transition: 0.3s;"></div>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <label class="form-label d-block mb-3">Hızlı Seçim</label>
+                <button type="button" class="quick-select-btn btn-beginner" onclick="setSkill(25)">Başlangıç (25%)</button>
+                <button type="button" class="quick-select-btn btn-mid" onclick="setSkill(50)">Orta (50%)</button>
+                <button type="button" class="quick-select-btn btn-good" onclick="setSkill(75)">İyi (75%)</button>
+                <button type="button" class="quick-select-btn btn-expert" onclick="setSkill(90)">Uzman (90%)</button>
+            </div>
+
+            <div class="d-flex gap-2 border-top pt-4 border-secondary">
+                <button type="submit" class="btn btn-primary px-4 py-2"><i class="bi bi-save me-2"></i>Yeteneği Kaydet</button>
+                <a href="/Skill/Index" class="btn btn-outline-danger px-4 py-2">İptal</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="form-container mt-4 p-3 bg-opacity-10 bg-info border-info border-start border-4 text-white-50" style="max-width: 800px;">
+        <i class="bi bi-info-circle me-2"></i> Yetenek seviyesini kaydırıcı ile ayarlayabilir veya hızlı seçim butonlarını kullanabilirsiniz.
+    </div>
+</div>
+
+<script>
+    // Sürgü hareket ettikçe değerleri ve önizlemeyi güncelle
+    function updatePreview(val) {
+        document.getElementById('rangeValue').innerText = val + "%";
+        document.getElementById('progressBar').style.width = val + "%";
+    }
+
+    // Hızlı seçim butonlarına basıldığında değerleri set et
+    function setSkill(val) {
+        const slider = document.getElementById('skillRange');
+        slider.value = val;
+        updatePreview(val);
+    }
+</script>

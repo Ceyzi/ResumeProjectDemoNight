@@ -1,0 +1,846 @@
+﻿@model List<ResumeProjectDemoNight.Entities.SocialMedia>
+@{
+    ViewData["Title"] = "Sosyal Medya Yönetimi";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+<div class="social-media-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-icon">
+                <i class="fas fa-share-alt"></i>
+            </div>
+            <div>
+                <h2>Sosyal Medya Hesaplarım</h2>
+                <p>Sosyal medya hesaplarınızı buradan yönetebilirsiniz</p>
+            </div>
+        </div>
+        <a href="/SocialMedia/CreateSocialMedia" class="btn-add">
+            <i class="fas fa-plus-circle"></i>
+            <span>Yeni Hesap Ekle</span>
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-link"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.Count</h3>
+                <p>Toplam Hesap</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Aktif</h3>
+                <p>Durumu</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="fas fa-globe"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Online</h3>
+                <p>Bağlantı</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Social Media Cards Grid -->
+    <div class="social-cards-grid">
+        @foreach (var item in Model)
+        {
+            var gradientClass = GetGradientClass(item.PlatformName);
+            var platformIcon = GetPlatformIcon(item.PlatformName);
+
+            <div class="social-card">
+                <div class="social-card-header @gradientClass">
+                    <div class="platform-logo">
+                        @if (!string.IsNullOrEmpty(item.Logo) && !item.Logo.Contains("placeholder"))
+                        {
+                            <img src="@item.Logo" alt="@item.PlatformName" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <i class="@platformIcon" style="display:none;"></i>
+                        }
+                        else
+                        {
+                            <i class="@platformIcon"></i>
+                        }
+                    </div>
+                    <div class="card-actions">
+                        <a href="/SocialMedia/UpdateSocialMedia/@item.Id" class="action-btn" title="Düzenle">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="action-btn delete" onclick="confirmDelete(@item.Id)" title="Sil">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="social-card-body">
+                    <h3 class="platform-name">@item.PlatformName</h3>
+                    <div class="url-container">
+                        <i class="fas fa-link"></i>
+                        <a href="@item.UrlAddress" target="_blank" class="platform-url" title="@item.UrlAddress">
+                            @(item.UrlAddress.Length > 35 ? item.UrlAddress.Substring(0, 35) + "..." : item.UrlAddress)
+                        </a>
+                    </div>
+
+                    <div class="card-footer">
+                        <a href="@item.UrlAddress" target="_blank" class="btn-visit">
+                            <i class="fas fa-external-link-alt"></i>
+                            Ziyaret Et
+                        </a>
+                        <button class="btn-copy" onclick="copyToClipboard('@item.UrlAddress')" title="URL'yi Kopyala">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-share-alt"></i>
+            </div>
+            <h3>Henüz sosyal medya hesabı eklenmemiş</h3>
+            <p>Sosyal medya hesaplarınızı ekleyerek portföyünüzü zenginleştirin</p>
+            <a href="/SocialMedia/CreateSocialMedia" class="btn-add-large">
+                <i class="fas fa-plus-circle"></i>
+                İlk Hesabınızı Ekleyin
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Hesabı Sil</h3>
+        </div>
+        <p>Bu sosyal medya hesabını silmek istediğinizden emin misiniz?</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal()">İptal</button>
+            <button class="btn-confirm" onclick="deleteSocial()">Sil</button>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetGradientClass(string platform)
+    {
+        if (string.IsNullOrEmpty(platform)) return "gradient-default";
+
+        return platform.ToLower() switch
+        {
+            var p when p.Contains("facebook") => "gradient-facebook",
+            var p when p.Contains("twitter") || p.Contains("x") => "gradient-twitter",
+            var p when p.Contains("instagram") => "gradient-instagram",
+            var p when p.Contains("linkedin") => "gradient-linkedin",
+            var p when p.Contains("github") => "gradient-github",
+            var p when p.Contains("youtube") => "gradient-youtube",
+            var p when p.Contains("tiktok") => "gradient-tiktok",
+            var p when p.Contains("pinterest") => "gradient-pinterest",
+            var p when p.Contains("telegram") => "gradient-telegram",
+            var p when p.Contains("whatsapp") => "gradient-whatsapp",
+            var p when p.Contains("discord") => "gradient-discord",
+            var p when p.Contains("snapchat") => "gradient-snapchat",
+            _ => "gradient-default"
+        };
+    }
+
+    string GetPlatformIcon(string platform)
+    {
+        if (string.IsNullOrEmpty(platform)) return "fas fa-share-alt";
+
+        return platform.ToLower() switch
+        {
+            var p when p.Contains("facebook") => "fab fa-facebook-f",
+            var p when p.Contains("twitter") => "fab fa-twitter",
+            var p when p.Contains("x") => "fab fa-x-twitter",
+            var p when p.Contains("instagram") => "fab fa-instagram",
+            var p when p.Contains("linkedin") => "fab fa-linkedin-in",
+            var p when p.Contains("github") => "fab fa-github",
+            var p when p.Contains("youtube") => "fab fa-youtube",
+            var p when p.Contains("tiktok") => "fab fa-tiktok",
+            var p when p.Contains("pinterest") => "fab fa-pinterest",
+            var p when p.Contains("telegram") => "fab fa-telegram",
+            var p when p.Contains("whatsapp") => "fab fa-whatsapp",
+            var p when p.Contains("discord") => "fab fa-discord",
+            var p when p.Contains("snapchat") => "fab fa-snapchat",
+            var p when p.Contains("reddit") => "fab fa-reddit",
+            var p when p.Contains("medium") => "fab fa-medium",
+            var p when p.Contains("behance") => "fab fa-behance",
+            var p when p.Contains("dribbble") => "fab fa-dribbble",
+            _ => "fas fa-share-alt"
+        };
+    }
+}
+
+<style>
+    .social-media-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        color: #fff;
+    }
+
+    .page-header p {
+        color: #94a3b8;
+        margin: 0.25rem 0 0 0;
+        font-size: 14px;
+    }
+
+    .btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            color: white;
+        }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: #1e293b;
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        border: 1px solid #334155;
+        transition: all 0.3s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: #475569;
+        }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .stat-info h3 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        color: #fff;
+    }
+
+    .stat-info p {
+        color: #94a3b8;
+        margin: 0.25rem 0 0 0;
+        font-size: 14px;
+    }
+
+    /* Social Cards Grid */
+    .social-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .social-card {
+        background: #1e293b;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #334155;
+        transition: all 0.3s ease;
+    }
+
+        .social-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            border-color: #475569;
+        }
+
+    .social-card-header {
+        padding: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .social-card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.6s ease;
+        }
+
+    .social-card:hover .social-card-header::before {
+        transform: scale(1);
+    }
+
+    /* Gradients */
+    .gradient-facebook {
+        background: linear-gradient(135deg, #1877f2 0%, #0d5dba 100%);
+    }
+
+    .gradient-twitter {
+        background: linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%);
+    }
+
+    .gradient-instagram {
+        background: linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%);
+    }
+
+    .gradient-linkedin {
+        background: linear-gradient(135deg, #0077b5 0%, #005885 100%);
+    }
+
+    .gradient-github {
+        background: linear-gradient(135deg, #333 0%, #000 100%);
+    }
+
+    .gradient-youtube {
+        background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    }
+
+    .gradient-tiktok {
+        background: linear-gradient(135deg, #00f2ea 0%, #ff0050 100%);
+    }
+
+    .gradient-pinterest {
+        background: linear-gradient(135deg, #e60023 0%, #bd081c 100%);
+    }
+
+    .gradient-telegram {
+        background: linear-gradient(135deg, #0088cc 0%, #0066aa 100%);
+    }
+
+    .gradient-whatsapp {
+        background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+    }
+
+    .gradient-discord {
+        background: linear-gradient(135deg, #5865f2 0%, #4752c4 100%);
+    }
+
+    .gradient-snapchat {
+        background: linear-gradient(135deg, #fffc00 0%, #f5d300 100%);
+    }
+
+    .gradient-default {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .platform-logo {
+        width: 70px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+    }
+
+        .platform-logo img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            /* Logo görünür olduğunda beyaz renk için */
+            filter: brightness(0) invert(1);
+        }
+
+        .platform-logo i {
+            font-size: 32px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    .card-actions {
+        display: flex;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1);
+        }
+
+        .action-btn.delete:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+    .social-card-body {
+        padding: 1.5rem;
+    }
+
+    .platform-name {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 1rem 0;
+        color: #fff;
+    }
+
+    .url-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #0f172a;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: 1px solid #334155;
+    }
+
+        .url-container i {
+            color: #667eea;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+    .platform-url {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+        transition: color 0.3s ease;
+    }
+
+        .platform-url:hover {
+            color: #667eea;
+        }
+
+    .card-footer {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-visit {
+        flex: 1;
+        padding: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+        .btn-visit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+    .btn-copy {
+        width: 42px;
+        padding: 10px;
+        background: #334155;
+        color: white;
+        border: 1px solid #475569;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .btn-copy:hover {
+            background: #475569;
+            transform: scale(1.05);
+        }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #1e293b;
+        border-radius: 16px;
+        border: 2px dashed #334155;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 48px;
+        color: white;
+    }
+
+    .empty-state h3 {
+        font-size: 24px;
+        margin-bottom: 0.5rem;
+        color: #fff;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin-bottom: 2rem;
+    }
+
+    .btn-add-large {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 14px 32px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-add-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+            color: white;
+        }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal.active {
+            display: flex;
+        }
+
+    .modal-content {
+        background: #1e293b;
+        padding: 2rem;
+        border-radius: 16px;
+        max-width: 400px;
+        width: 90%;
+        border: 1px solid #334155;
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @@keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+        .modal-header i {
+            font-size: 32px;
+            color: #ef4444;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #fff;
+        }
+
+    .modal-content p {
+        color: #94a3b8;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-cancel,
+    .btn-confirm {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel {
+        background: #334155;
+        color: white;
+    }
+
+        .btn-cancel:hover {
+            background: #475569;
+        }
+
+    .btn-confirm {
+        background: #ef4444;
+        color: white;
+    }
+
+        .btn-confirm:hover {
+            background: #dc2626;
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .social-media-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .social-cards-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    let deleteId = null;
+
+    function confirmDelete(id) {
+        deleteId = id;
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        deleteId = null;
+    }
+
+    function deleteSocial() {
+        if (deleteId) {
+            window.location.href = `/SocialMedia/DeleteSocialMedia/${deleteId}`;
+        }
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            // Show toast notification
+            showToast('URL kopyalandı!', 'success');
+        }).catch(err => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('URL kopyalandı!', 'success');
+            } catch (err) {
+                showToast('Kopyalama başarısız!', 'error');
+            }
+            document.body.removeChild(textArea);
+        });
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#10b981' : '#ef4444'};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+            font-weight: 600;
+            animation: slideInRight 0.3s ease;
+        `;
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 2000);
+    }
+
+    // Close modal on outside click
+    document.getElementById('deleteModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'deleteModal') {
+            closeModal();
+        }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.getElementById('deleteModal').classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    // Add animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @@keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @@keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>

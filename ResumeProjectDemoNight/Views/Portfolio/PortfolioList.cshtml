@@ -1,0 +1,141 @@
+﻿@model List<ResumeProjectDemoNight.Entities.Portfolio>
+@{
+    ViewData["Title"] = "PortfolioList";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+<div class="flex-1 overflow-y-auto p-8">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">Portfolio Listesi</h1>
+                <p class="text-slate-400">
+                    Projelerinizle ilgili işlemleri bu sayfadan gerçekleştirebilirsiniz.
+                </p>
+            </div>
+            <a href="/Portfolio/CreatePortfolio/"
+               class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+                <span class="text-xl">+</span>
+                Yeni Proje Ekle
+            </a>
+        </div>
+
+        <!-- Portfolio Grid -->
+        <div class="grid gap-6">
+            @foreach (var portfolio in Model)
+            {
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-slate-600 transition-all">
+                    <div class="flex items-start gap-6">
+
+                        <!-- Icon -->
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 bg-purple-600/20 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-purple-400 text-3xl">
+                                    folder_open
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xl font-bold text-white mb-2">
+                                    @portfolio.ProjectTitle
+                                </h3>
+
+                                <!-- STATUS -->
+                                @if (portfolio.Status)
+                                {
+                                    <span class="px-3 py-1 text-xs font-semibold rounded-full
+                                                         bg-green-500/20 text-green-400 border border-green-500/30">
+                                        Aktif
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-3 py-1 text-xs font-semibold rounded-full
+                                                         bg-red-500/20 text-red-400 border border-red-500/30">
+                                        Pasif
+                                    </span>
+                                }
+                            </div>
+
+                            <!-- Image URL -->
+                            <div class="flex items-center gap-2 text-sm text-slate-400">
+                                <span class="material-symbols-outlined text-sm">image</span>
+                                <span class="truncate">@portfolio.ImageUrl</span>
+                            </div>
+
+                            <!-- Preview Image -->
+                            @if (!string.IsNullOrEmpty(portfolio.ImageUrl))
+                            {
+                                <div class="mt-4">
+                                    <img src="@portfolio.ImageUrl"
+                                         alt="@portfolio.ProjectTitle"
+                                         class="w-full max-w-md rounded-lg border border-slate-700
+                                                        hover:scale-105 transition-transform cursor-pointer"
+                                         onclick="window.open('@portfolio.ImageUrl', '_blank')" />
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center gap-2">
+                            <a href="/Portfolio/UpdatePortfolio/@portfolio.PortfolioId"
+                               class="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all"
+                               title="Düzenle">
+                                <span class="material-symbols-outlined">edit</span>
+                            </a>
+
+                            <a href="/Portfolio/DeletePortfolio/@portfolio.PortfolioId"
+                               class="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                               onclick="return confirm('Bu projeyi silmek istediğinizden emin misiniz?')"
+                               title="Sil">
+                                <span class="material-symbols-outlined">delete</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Empty State -->
+        @if (Model.Count == 0)
+        {
+            <div class="text-center py-16">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-slate-800 rounded-full mb-4">
+                    <span class="material-symbols-outlined text-slate-600 text-4xl">
+                        folder_open
+                    </span>
+                </div>
+                <h3 class="text-xl font-semibold text-white mb-2">
+                    Henüz proje eklenmemiş
+                </h3>
+                <p class="text-slate-400 mb-6">
+                    İlk projenizi ekleyerek başlayın
+                </p>
+                <a href="/Portfolio/CreatePortfolio/"
+                   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+                    <span class="text-xl">+</span>
+                    Proje Ekle
+                </a>
+            </div>
+        }
+
+        <!-- Footer -->
+        <div class="mt-8 flex items-center justify-between text-sm text-slate-500">
+            <span>Toplam @Model.Count proje listeleniyor</span>
+            <div class="flex gap-2">
+                <button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-all">
+                    Önceki
+                </button>
+                <button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-all">
+                    Sonraki
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
